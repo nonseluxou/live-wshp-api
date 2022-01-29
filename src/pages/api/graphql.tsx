@@ -9,8 +9,11 @@ import { schema } from '../../modules/model';
 const server = new ApolloServer({
   schema,
   introspection: true,
-  context: async () => {
-    return { prisma, user: null };
+  context: async ({ req }) => {
+    const id: string | null =
+      (req.headers.authorization || '').replace(/bearer/i, '').trim() || null;
+
+    return { prisma, user: !id ? null : await prisma.user.findUnique({ where: { id } }) };
   },
   plugins: [ApolloServerPluginLandingPageLocalDefault({ footer: false })],
 });

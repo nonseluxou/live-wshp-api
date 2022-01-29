@@ -8,6 +8,55 @@ generator client {
 }
 
 model User {
-  id       String @id
-  nickname String @unique
+  id        String             @id @default(cuid())
+  nickname  String             @unique
+  posts     Post[]             @relation("UserPosts")
+  reactions ReactionsOnPosts[]
+
+  following Follow[] @relation("UserFollowing")
+  followers Follow[] @relation("UserFollower")
+}
+
+model Follow {
+  userId     String
+  followedId String
+
+  user         User @relation("UserFollowing", fields: [userId], references: [id])
+  followedUser User @relation("UserFollower", fields: [followedId], references: [id])
+
+  @@id([userId, followedId])
+}
+
+enum ReactionType {
+  HAPPINESS
+  LOVE
+  HATRED
+  SADNESS
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  message   String
+  createdAt DateTime @default(now())
+
+  userId String
+  by     User   @relation("UserPosts", fields: [userId], references: [id])
+
+  parentId String?
+  parent   Post?   @relation("PostReplies", fields: [parentId], references: [id])
+  replies  Post[]  @relation("PostReplies")
+
+  reactions ReactionsOnPosts[]
+}
+
+model ReactionsOnPosts {
+  userId String
+  user   User         @relation(fields: [userId], references: [id])
+  postId String
+  post   Post         @relation(fields: [postId], references: [id])
+  type   ReactionType
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
 }

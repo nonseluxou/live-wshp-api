@@ -3,9 +3,11 @@ import path from 'path';
 import { makeSchema } from 'nexus';
 
 import * as user from './User';
+import * as me from './MeQuery';
+import * as signIn from './SignInMutation';
 
 export const schema = makeSchema({
-  types: { ...user },
+  types: { ...user, ...me, ...signIn },
   contextType: {
     module: path.join(__dirname, 'context.ts'),
     export: 'MyContextType',
