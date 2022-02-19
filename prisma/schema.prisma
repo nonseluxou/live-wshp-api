@@ -35,7 +35,7 @@ enum ReactionType {
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        String   @id
   message   String
   createdAt DateTime @default(now())
 

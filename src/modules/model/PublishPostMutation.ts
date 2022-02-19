@@ -1,4 +1,5 @@
 import { AuthenticationError, UserInputError } from 'apollo-server';
+import { DateTime } from 'luxon';
 import { extendType, nonNull, nullable } from 'nexus';
 
 export const PublishPostMutation = extendType({
@@ -19,6 +20,7 @@ export const PublishPostMutation = extendType({
 
         return await ctx.prisma.post.create({
           data: {
+            id: DateTime.utc().toISO(),
             userId: ctx.user.id,
             message,
             parentId: args.parentId ?? undefined,
