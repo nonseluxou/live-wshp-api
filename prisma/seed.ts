@@ -1,35 +1,69 @@
 import { PrismaClient } from '@prisma/client';
 import { DateTime } from 'luxon';
 
+import messages from './messages.json';
+
 const prisma = new PrismaClient();
 
 const run = async () => {
-  const posts = Array(2000).fill(null);
-
   const startTime = DateTime.fromISO('2022-01-01T00:00:00.000Z');
 
-  const user1 = await prisma.user.create({
+  const ironMan = await prisma.user.create({
     data: {
-      nickname: 'mia',
+      nickname: 'ironMan',
     },
   });
 
-  const user2 = await prisma.user.create({
+  const cap = await prisma.user.create({
     data: {
-      nickname: 'rue',
+      nickname: 'cap',
+    },
+  });
+
+  const thanos = await prisma.user.create({
+    data: {
+      nickname: 'thanos',
+    },
+  });
+
+  await prisma.follow.create({
+    data: {
+      userId: ironMan.id,
+      followedId: cap.id,
+    },
+  });
+
+  await prisma.follow.create({
+    data: {
+      userId: thanos.id,
+      followedId: ironMan.id,
+    },
+  });
+
+  await prisma.follow.create({
+    data: {
+      userId: thanos.id,
+      followedId: cap.id,
     },
   });
 
   await prisma.post.createMany({
-    data: posts.map((_, index) => {
-      const createdAt = startTime.plus({ minutes: index }).toISO();
-      return {
-        id: createdAt,
-        userId: index % 2 !== 0 ? user1.id : user2.id,
-        message: Intl.NumberFormat('en').format(index + 1),
-        createdAt,
-      };
-    }),
+    data: [
+      messages.ironMan.map((it) => ({ message: it, userId: ironMan.id })),
+      messages.cap.map((it) => ({ message: it, userId: cap.id })),
+      messages.thanos.map((it) => ({ message: it, userId: thanos.id })),
+    ]
+      .flat()
+      .sort((a, b) => a.message.localeCompare(b.message))
+      .map(({ message, userId }, index) => {
+        const createdAt = startTime.plus({ minutes: index }).toISO();
+        return {
+          id: createdAt,
+          userId,
+          message,
+          createdAt,
+        };
+      }),
   });
 };
 
